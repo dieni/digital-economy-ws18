@@ -12,6 +12,7 @@ def home():
 
 @app.route('/login')
 def login():
+# login endpoint
     return render_template('login.html')
 
 
