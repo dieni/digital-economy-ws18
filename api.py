@@ -80,7 +80,6 @@ def api_products():
 @app.route('/api/search', methods=['GET', 'PUT'])
 def api_search():
     if request.method == 'PUT':
-        print('jebote')
         return "XML with list of search results"
     else:
         # Return schema of search
