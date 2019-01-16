@@ -29,4 +29,13 @@ class db_connection:
         '''
         Get a list of all products
         '''
+        # TODO link with database
         return self.products
+
+    def get_orders(self):
+
+        return 'List of orders'
+
+    def search_product(self, id):
+        # TODO search in database
+        return "specific product"

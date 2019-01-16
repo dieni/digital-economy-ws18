@@ -21,7 +21,7 @@ def home():
 @app.route('/login')
 def login():
     '''
-    Login page so the use can login to the system.
+    Login page so the use can login to the system. Get session for a user
     '''
     return render_template('login.html', title='Login')
 
@@ -31,9 +31,10 @@ def products():
     '''
     Here the user can see all products which are available.
     '''
+    products = db.get_products
 
     # return "products"
-    return "list of products"
+    return render_template('products.html', title='Products', products=products)
 
 
 @app.route('/dashboard')
@@ -79,6 +80,7 @@ def api_products():
 
 @app.route('/api/search', methods=['GET', 'PUT'])
 def api_search():
+    # TODO
     if request.method == 'PUT':
         return "XML with list of search results"
     else:
@@ -88,6 +90,7 @@ def api_search():
 
 @app.route('/api/orders', methods=['GET', 'PUT'])
 def cancellation():
+    # TODO
     if request.method == 'PUT':
         # cancel order and send back confirmation.
         return "confirmation"
