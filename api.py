@@ -1,10 +1,11 @@
-from flask import Flask, render_template, url_for, request, Response
+from flask import Flask, render_template, url_for, request, Response, flash, redirect
+from forms import LoginForm
 
 from data import db_connection
 import xml.etree.ElementTree as et
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '24446f27d7e8540adcaf914f0aea6bd7'
+app.config['SECRET_KEY'] = '24446f27d7e8540adcaf914f0aea6bd7'  # used for
 
 
 db = db_connection()
@@ -21,12 +22,26 @@ def home():
     return render_template('home.html', title='Home')
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     '''
     Login page so the use can login to the system. Get session for a user
     '''
-    return render_template('login.html', title='Login')
+    form = LoginForm()
+    if form.validate_on_submit():
+
+        # check if user is in the database
+        customer = db.authorize(
+            int(form.customer_id.data), password=form.password.data)
+
+        if customer:
+
+            flash('You have been logged in!', 'success')
+            return redirect(url_for('home'))
+        else:
+            flash('Login Unsuccessful. Please check id and password', 'danger')
+
+    return render_template('login.html', title='Login', form=form)
 
 
 @app.route('/products')
@@ -37,6 +52,15 @@ def products():
     # TODO: Modify the template to check some products to buy. Use a Button to proceed with purchasing.
     products = db.get_products()  # get products from the database
     return render_template('products.html', title='Products', products=products)
+
+
+@app.route('/search')
+def search():
+    '''
+    Here the user can search for a sepcific product
+    '''
+
+    return render_template('search.html', title='Search')
 
 
 @app.route('/dashboard')

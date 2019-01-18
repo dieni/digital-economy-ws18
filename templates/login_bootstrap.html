@@ -1,0 +1,41 @@
+ <!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <!-- code optimization for mobile devices -->
+        
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='signin.css') }}">
+
+
+        {% if title%}
+        <title>{{ title }}</title>
+        {% else %}
+        <title>Login</title>
+        {% endif %}
+    </head>
+    <body>
+        <form class="form-signin">
+
+            <h1 class="h3 mb-3 font-weight-normal">Please log in</h1>
+            <label for="inputEmail" class="sr-only">Email address</label>
+            <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+            <label for="inputPassword" class="sr-only">Password</label>
+            <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+            <div class="checkbox mb-3">
+                <label>
+                <input type="checkbox" value="remember-me"> Remember me
+                </label>
+            </div>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Login in</button>
+            <p class="mt-5 mb-3 text-muted">&copy; Fish GmbH 2019</p>
+            {{ form.password.label(class='form-control-label') }}
+            {{ form.password(class='form-control form-control-lg') }}
+        </form>
+    </body>
+</html>

@@ -1,39 +1,44 @@
- <!doctype html>
-<html lang="en">
-    <head>
-        <!-- Required meta tags -->
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <!-- code optimization for mobile devices -->
-        
+{% extends 'layout.html' %}
+{% block content %}
 
-        <!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+<div class="content-section">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group form-login">
+                <legend class="border-bottom mb-4">Log In</legend>
+                <div class="form-group">
+                    {{ form.customer_id.label(class="form-control-label") }}
+                    {% if form.customer_id.errors %}
+                        {{ form.customer_id(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.customer_id.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.customer_id(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.password.label(class="form-control-label") }}
+                    {% if form.password.errors %}
+                        {{ form.password(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.password.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.password(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
 
-        <!-- Custom CSS -->
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='signin.css') }}">
+            </fieldset>
+            <div class="form-group form-login">
+                {{ form.submit(class="btn btn-outline-info") }}
+            </div>
 
-
-        {% if title%}
-        <title>{{ title }}</title>
-        {% else %}
-        <title>Login</title>
-        {% endif %}
-    </head>
-    <body>
-        <form class="form-signin">
-
-        <h1 class="h3 mb-3 font-weight-normal">Please log in</h1>
-        <label for="inputEmail" class="sr-only">Email address</label>
-        <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
-        <label for="inputPassword" class="sr-only">Password</label>
-        <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
-        <div class="checkbox mb-3">
-            <label>
-            <input type="checkbox" value="remember-me"> Remember me
-            </label>
-        </div>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Login in</button>
-        <p class="mt-5 mb-3 text-muted">&copy; 2018-2019</p>
         </form>
-    </body>
-</html>
+</div>
+    
+{% endblock content %}
