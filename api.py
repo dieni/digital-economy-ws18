@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, request, Response, flash, redirect
+from flask import Flask, render_template, url_for, request, Response, flash, redirect, session
 from forms import LoginForm
 
 from data import db_connection
@@ -19,7 +19,8 @@ def home():
     '''
     This is the start page of our webshop.
     '''
-    return render_template('home.html', title='Home')
+
+    return render_template('home.html', title='Home', authorized=checkSession())
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -37,11 +38,23 @@ def login():
         if customer:
 
             flash('You have been logged in!', 'success')
+
+            # Create a sesssion
+            # session['customer_id'] = customer['customer_id']
+            session['customer'] = customer
+
             return redirect(url_for('home'))
         else:
             flash('Login Unsuccessful. Please check id and password', 'danger')
 
     return render_template('login.html', title='Login', form=form)
+
+
+@app.route('/logout')
+def logout():
+
+    session.pop('customer_id', None)
+    return redirect(url_for('home'))
 
 
 @app.route('/products')
@@ -51,7 +64,7 @@ def products():
     '''
     # TODO: Modify the template to check some products to buy. Use a Button to proceed with purchasing.
     products = db.get_products()  # get products from the database
-    return render_template('products.html', title='Products', products=products)
+    return render_template('products.html', title='Products', products=products, authorized=checkSession())
 
 
 @app.route('/search')
@@ -60,7 +73,13 @@ def search():
     Here the user can search for a sepcific product
     '''
 
-    return render_template('search.html', title='Search')
+    return render_template('search.html', title='Search', authorized=checkSession())
+
+
+@app.route('/cart')
+def shopping_cart():
+
+    return 'your shopping cart'
 
 
 @app.route('/dashboard')
@@ -191,6 +210,16 @@ def authorize(request):
 
     # if authorization is ok return object of customer
     return customer
+
+
+def checkSession():
+    '''
+    This method checks if a session exists
+    '''
+    if 'customer' in session:
+        return True
+    else:
+        return False
 
 
 if __name__ == '__main__':
