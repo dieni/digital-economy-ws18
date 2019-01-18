@@ -1,14 +1,12 @@
 from flask import Flask, render_template, url_for, request, Response, flash, redirect, session
-from forms import LoginForm
+from fishshop import app
+from fishshop.forms import LoginForm
+from fishshop.data import db_connection
 
-from data import db_connection
 import xml.etree.ElementTree as et
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = '24446f27d7e8540adcaf914f0aea6bd7'  # used for
 
-
-db = db_connection()
+db_con = db_connection()
 
 # B2C Webshop
 
@@ -32,7 +30,7 @@ def login():
     if form.validate_on_submit():
 
         # check if user is in the database
-        customer = db.authorize(
+        customer = db_con.authorize(
             int(form.customer_id.data), password=form.password.data)
 
         if customer:
@@ -63,7 +61,7 @@ def products():
     Here the user can see all products which are available.
     '''
     # TODO: Modify the template to check some products to buy. Use a Button to proceed with purchasing.
-    products = db.get_products()  # get products from the database
+    products = db_con.get_products()  # get products from the database
     return render_template('products.html', title='Products', products=products, authorized=checkSession())
 
 
@@ -77,7 +75,7 @@ def search():
 
 
 @app.route('/cart')
-def shopping_cart():
+def cart():
 
     return 'your shopping cart'
 
@@ -102,7 +100,7 @@ def api_products():
     Get a list of all Products
     '''
 
-    products = db.get_products()
+    products = db_con.get_products()
 
     # building xml
     root = et.Element('products')
@@ -155,11 +153,11 @@ def cancellation():
         order_id = root.findall(".//bestellungid")  # returns a list
 
         # cancel order
-        return db.cancel_order(customer['customer_id'], int(order_id[0].text))
+        return db_con.cancel_order(customer['customer_id'], int(order_id[0].text))
 
     else:
         # return a list of orders from a user
-        orders = db.get_orders(customer['customer_id'])
+        orders = db_con.get_orders(customer['customer_id'])
 
         # building xml
         root = et.Element('orders')
@@ -203,7 +201,7 @@ def authorize(request):
     if not auth:
         return "You are not authorized!"
 
-    customer = db.authorize(int(auth.username), auth.password)
+    customer = db_con.authorize(int(auth.username), auth.password)
 
     if not customer:
         return "Wrong customer id or password!"
