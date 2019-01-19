@@ -1,7 +1,15 @@
-from fishshop import db
+from fishshop import db, login_manager
+from flask_login import UserMixin
+# UserMixin adds methods like is_authenticated, is_acctive, get_id
 
 
-class Customer(db.Model):
+@login_manager.user_loader
+def load_customer(user_id):
+    # reloading user saved in the session
+    return Customer.query.get(int(user_id))
+
+
+class Customer(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     cname = db.Column(db.String(20), nullable=False)
     username = db.Column(db.String(20), nullable=False)

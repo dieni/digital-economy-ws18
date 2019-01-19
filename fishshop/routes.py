@@ -1,6 +1,8 @@
 from flask import Flask, render_template, url_for, request, Response, flash, redirect, session
-from fishshop import app
+from fishshop import app, db, bcrypt
 from fishshop.forms import LoginForm
+from fishshop.models import Customer, Order, Product, Producttype, Payment
+from flask_login import login_user, current_user, logout_user, login_required
 from fishshop.db_handler import db_connection
 
 # from fishshop.models import Customer
@@ -40,21 +42,18 @@ def login():
     '''
     Login page so the use can login to the system. Get session for a user
     '''
+
+    # if user is already logged in redirect to home
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+
     form = LoginForm()
+
     if form.validate_on_submit():
-
-        # check if user is in the database
-        customer = db_con.authorize(
-            int(form.customer_id.data), password=form.password.data)
-
-        if customer:
-
-            flash('You have been logged in!', 'success')
-
-            # Create a sesssion
-            # session['customer_id'] = customer['customer_id']
-            session['customer'] = customer
-
+        # check if there is a customer with this id
+        customer = Customer.query.filter_by(id=form.customer_id.data).first()
+        if customer and bcrypt.check_password_hash(customer.password, form.password.data):
+            login_user(customer)
             return redirect(url_for('home'))
         else:
             flash('Login Unsuccessful. Please check id and password', 'danger')
@@ -64,8 +63,7 @@ def login():
 
 @app.route('/logout')
 def logout():
-
-    session.pop('customer_id', None)
+    logout_user()
     return redirect(url_for('home'))
 
 
@@ -93,6 +91,7 @@ def search():
 
 
 @app.route('/cart')
+@login_required
 def cart():
 
     return 'your shopping cart'
@@ -118,6 +117,7 @@ def api_products():
     Get a list of all Products
     '''
 
+    # query the products
     products = db_con.get_products()
 
     # building xml
@@ -126,13 +126,17 @@ def api_products():
     for p in products:
         product = et.SubElement(root, 'product')
         product_id = et.SubElement(product, 'id')
-        product_id.text = str(p['product_id'])
+        product_id.text = str(p.id)
         title = et.SubElement(product, 'title')
-        title.text = str(p['title'])
+        title.text = str(p.title)
+        available = et.SubElement(product, 'quantity')
+        available.text = str(p.quantity)
         price = et.SubElement(product, 'price')
-        price.text = str(p['price'])
-        available = et.SubElement(product, 'available')
-        available.text = str(p['available'])
+        price.text = str(p.price)
+        price = et.SubElement(product, 'disabled')
+        price.text = str(p.disabled)
+        price = et.SubElement(product, 'producttype_id')
+        price.text = str(p.producttype_id)
 
     xml_str = et.tostring(root, encoding='utf8', method='xml')
 
