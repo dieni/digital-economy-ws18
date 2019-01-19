@@ -8,7 +8,7 @@ class Customer(db.Model):
     password = db.Column(db.String(60), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     private = db.Column(db.Boolean)
-    orders = db.relationship('Order', backref='customer', lazy=True)
+    # orders = db.relationship('Order', backref='customer', lazy=True)
 
     def __repr__(self):
         '''
@@ -43,7 +43,11 @@ class Order(db.Model):
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    fkorder = db.Column(db.Integer, db.ForeignKey, primary_key=True)
+    # What Foreign Key?? db.ForeignKey(''),
+    #
+    # dont know if we have to specify this because of the given relation..
+    # defined in order model used parameter 'backref': payments = db.relationship('Payment', backref='order', lazy=True)
+    # fkorder = db.Column(db.Integer, db.ForeignKey, primary_key=True)
     paymenttype = db.Column(db.String(20))
     fullamount = db.Column(db.Float)
     partialamount = db.Column(db.Float)
@@ -79,5 +83,3 @@ class Product(db.Model):
     def __repr__(self):
         return f"Product('{self.id}', '{self.title}', '{self.quantity}', '{self.price}', '{self.disabled}'," \
             f" '{self.producttype_id}')"
-
-
