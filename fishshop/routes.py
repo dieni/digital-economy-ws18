@@ -36,6 +36,18 @@ def dbcreate():
 
     return 'Database created'
 
+# c2b storno
+@app.route('/storno')
+def storno():
+    '''
+    This is the page for ordering storno
+    '''
+
+    orderobjects = Ordering.query.filter_by(customer_id=4).filter_by(canceled=False).filter_by(finished=False).all()
+    if not orderobjects:
+        return 'None'
+    return render_template('storno.html', title='Orders', orders=orderobjects, authorized=checkSession())
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -196,8 +208,7 @@ def cancellation():
     GET: Get a list of all orders of a user
     '''
     # Authorization
-    customer = authorize(request.authorization.username,
-                         request.authorization.password)
+    customer = authorize(request.authorization.username, request.authorization.password)
 
     if not customer:
         return 'You are not authorized'
@@ -217,8 +228,9 @@ def cancellation():
             bestell_id = et.SubElement(root, 'bestellungid')
             storno = et.SubElement(root, 'storniert')
             bestell_id.text = str(bestellung_id)
-            storno.text = "erfolgreich"
+            storno.text = 'erfolgreich'
             xml_str = et.tostring(root, encoding='utf8', method='xml')
+            return Response(xml_str, mimetype='text/xml')
         else:
             return "Order nicht gefunden!"
 
@@ -245,8 +257,9 @@ def cancellation():
 
             return Response(xml_str, mimetype='text/xml')
         else:
-            return "Ware nicht vorhanden!"
+        	return "Ware nicht vorhanden!"
 
+    '''
     else:
         # return a list of orders from a user
         orders = db_con.get_orders(customer['customer_id'])
@@ -281,6 +294,7 @@ def cancellation():
     xml_str = et.tostring(root, encoding='utf8', method='xml')
 
     return Response(xml_str, mimetype='text/xml')
+'''
 
 
 def authorize(username, password):
@@ -294,6 +308,7 @@ def authorize(username, password):
         return customer
     else:
         return None
+
 
 
 def checkSession():

@@ -143,7 +143,7 @@ class db_connection:
         productobject = Product.query.filter_by(id=product_id).first()
         if amount < productobject.quantity and productobject.disabled is False:
             # Insert new ordering ordering
-            newordering = Ordering(finished=True, canceled=False, customer_id=customer_id)
+            newordering = Ordering(finished=False, canceled=False, customer_id=customer_id)
             db.session.add(newordering)
             db.session.commit()
             # get new id
