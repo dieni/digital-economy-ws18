@@ -2,7 +2,7 @@
 {% block content %}
 
 {% for product in products %}
-    <li>ID: {{ product['product_id'] }}, Title: {{ product['title'] }}</li>
+    <li>ID: {{ product.id }}, Title: {{ product.title }}</li>
 {% endfor %}
 
 {% endblock content %}

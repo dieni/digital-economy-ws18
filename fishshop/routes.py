@@ -1,7 +1,7 @@
 from flask import Flask, render_template, url_for, request, Response, flash, redirect, session
 from fishshop import app
 from fishshop.forms import LoginForm
-from fishshop.data import db_connection
+from fishshop.db_handler import db_connection
 
 # from fishshop.models import Customer
 # from fishshop import db
@@ -30,7 +30,7 @@ def dbcreate():
     '''
     This is the start page of our webshop.
     '''
-    # c = db_con.create_db()
+    db_con.create_db()
 
     return 'Yay'
 
@@ -76,6 +76,10 @@ def products():
     '''
     # TODO: Modify the template to check some products to buy. Use a Button to proceed with purchasing.
     products = db_con.get_products()  # get products from the database
+
+    if not products:
+        return 'None'
+
     return render_template('products.html', title='Products', products=products, authorized=checkSession())
 
 

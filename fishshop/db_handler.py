@@ -1,5 +1,5 @@
 from fishshop import db
-from fishshop.models import Customer
+from fishshop.models import Customer, Product, Producttype
 
 
 class db_connection:
@@ -11,23 +11,36 @@ class db_connection:
         db.create_all()
 
         # create some data
-        customer = Customer(cname='testuser', username='sepp', password='seppi69',
-                            email='seppi@oebb.at', private=True)
+        # customer = Customer(cname='testuser', username='sepp', password='seppi69',
+        #                     email='seppi@oebb.at', private=True)
+
+        producttype1 = Producttype(
+            id=1, producttypename='Fisch', description='Alle Fische')
+        product1 = Product(title='Thunfisch', quantity=5,
+                           price=100.9, disabled=0, producttype_id='1')
 
         # Put data into the database
-        db.session.add(customer)
+        db.session.add(producttype1)
+        db.session.add(product1)
         db.session.commit()
 
-        return Customer.query.all()
+    # def get_customers(self):
+    #     customers = db.customer.query.all()
+    #     if not customers:
+    #         return None
+    #     else:
+    #         return customers
 
     def get_products(self):
-        productobjects = db.product.query.all()
-        if productobjects is None:
-            return None
-        else:
-            return productobjects
+        return Product.query.all()
 
-    #b2c - get all orders
+        # productobjects = db.product.query.all()
+        # if productobjects is None:
+        #     return None
+        # else:
+        #     return productobjects
+
+    # b2c - get all orders
     def get_orders(self, customer_id):
         orderobjects = db.order.query.filter_by(fkkunde=customer_id).all()
         if orderobjects is None:
@@ -35,7 +48,7 @@ class db_connection:
         else:
             return orderobjects
 
-    #b2b
+    # b2b
     def search_product(self, id):
         productobject = db.product.query.filter_by(id=id).first()
         if productobject is None:
@@ -55,8 +68,6 @@ class db_connection:
             db.session.add(orderobject)
             db.session.commit()
             return True
-
-
 
     def authorize(self, username, password):
         '''
