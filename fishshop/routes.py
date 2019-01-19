@@ -83,14 +83,6 @@ def products():
     return render_template('products.2.html', title='Products', products=products, authorized=checkSession())
 
 
-@app.route('/search')
-def search():
-    '''
-    Here the user can search for a sepcific product
-    '''
-
-    return render_template('search.html', title='Search', authorized=checkSession())
-
 
 @app.route('/cart', methods=['GET', 'POST'])
 @login_required
@@ -111,6 +103,29 @@ def cart():
         return render_template('cart.html', title='Cart', products=products_in_cart)
 
     return redirect(url_for('products'))
+
+
+@app.route('/checkout', methods=['GET', 'POST'])
+@login_required
+def checkout():
+    '''
+    C2B
+    '''
+
+    #customer = Customer.query.filter_by(id=current_user.id).first()
+
+    if request.method == 'POST':
+
+        count = 0
+
+        buy = []
+        for p in request.form.get('quantity'):
+            count += 1
+            product = Product.query.find_by(title=p['ptitle']).first()
+            product.quantity = p['quantity']
+            buy.append(product)
+
+        return "Thank you for your order " + str(count)
 
 
 @app.route('/dashboard')
@@ -181,7 +196,8 @@ def cancellation():
     GET: Get a list of all orders of a user
     '''
     # Authorization
-    customer = authorize(request.authorization.username, request.authorization.password)
+    customer = authorize(request.authorization.username,
+                         request.authorization.password)
 
     if not customer:
         return 'You are not authorized'
@@ -203,7 +219,8 @@ def cancellation():
             bestell_id.text = str(bestellung_id)
             storno.text = "erfolgreich"
             xml_str = et.tostring(root, encoding='utf8', method='xml')
-        else: return "Order nicht gefunden!"
+        else:
+            return "Order nicht gefunden!"
 
     elif request.method == 'POST':
         # reading the xml from the request
@@ -227,7 +244,8 @@ def cancellation():
             xml_str = et.tostring(root, encoding='utf8', method='xml')
 
             return Response(xml_str, mimetype='text/xml')
-        else: return "Ware nicht vorhanden!"
+        else:
+            return "Ware nicht vorhanden!"
 
     else:
         # return a list of orders from a user
@@ -276,7 +294,6 @@ def authorize(username, password):
         return customer
     else:
         return None
-
 
 
 def checkSession():

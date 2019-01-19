@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block content %}
 
-<form action = "/buy" method = "POST">
+<form action = "/checkout" method = "POST">
 <div class="card">
 <table class="table table-hover shopping-cart-wrap">
 <thead class="text-muted">
@@ -21,7 +21,7 @@
         <figure class="media">
             <div class="img-wrap"><img src="http://bootstrap-ecommerce.com/main/images/items/2.jpg" class="img-thumbnail img-sm"></div>
             <figcaption class="media-body">
-                <h6 class="title text-truncate">{{product.title}} </h6>
+                <h6 class="title text-truncate" name='ptitle'>{{product.title}} </h6>
                 <dl class="param param-inline small">
                 <dt>Category: </dt>
                 <dd>{{product.producttype_id}}</dd>
@@ -30,10 +30,10 @@
         </figure> 
             </td>
             <td>
-                {{product.quantity}}
+                <div name="quantity">{{product.quantity}}</div>
             </td>
             <td> 
-                {{product.price}} 
+                {{product.price}}
             </td>
             <td> 
                 <div class="price-wrap"> 
