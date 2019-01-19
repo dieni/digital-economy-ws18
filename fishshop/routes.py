@@ -3,10 +3,14 @@ from fishshop import app
 from fishshop.forms import LoginForm
 from fishshop.data import db_connection
 
+# from fishshop.models import Customer
+# from fishshop import db
+
 import xml.etree.ElementTree as et
 
 
 db_con = db_connection()
+
 
 # B2C Webshop
 
@@ -19,6 +23,16 @@ def home():
     '''
 
     return render_template('home.html', title='Home', authorized=checkSession())
+
+
+@app.route('/dbcreate')
+def dbcreate():
+    '''
+    This is the start page of our webshop.
+    '''
+    # c = db_con.create_db()
+
+    return 'Yay'
 
 
 @app.route('/login', methods=['GET', 'POST'])

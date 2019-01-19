@@ -1,4 +1,5 @@
 from fishshop import db
+from fishshop.models import Customer
 
 
 class db_connection:
@@ -6,7 +7,19 @@ class db_connection:
     This class handels the connection to the sql database.
     '''
 
-    #b2c - get all products
+    def create_db(self):
+        db.create_all()
+
+        # create some data
+        customer = Customer(cname='testuser', username='sepp', password='seppi69',
+                            email='seppi@oebb.at', private=True)
+
+        # Put data into the database
+        db.session.add(customer)
+        db.session.commit()
+
+        return Customer.query.all()
+
     def get_products(self):
         productobjects = db.product.query.all()
         if productobjects is None:

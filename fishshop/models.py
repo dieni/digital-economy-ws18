@@ -3,18 +3,18 @@ from fishshop import db
 
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(20), unique=True, nullable=False)
-    username = db.Column(db.String(20), unique=True, nullable=False)
+    cname = db.Column(db.String(20), nullable=False)
+    username = db.Column(db.String(20), nullable=False)
     password = db.Column(db.String(60), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), nullable=False)
     private = db.Column(db.Boolean)
-    # orders = db.relationship('Order', backref='customer', lazy=True)
+    orders = db.relationship('Order', backref='customer', lazy=True)
 
     def __repr__(self):
         '''
         Defines how the user is printed
         '''
-        return f"Customer('{self.id}', '{self.name}', '{self.username}', '{self.password}', '{self.email}'," \
+        return f"Customer('{self.id}', '{self.cname}', '{self.username}', '{self.password}', '{self.email}'," \
             f"'{self.private}',)"
 
 
@@ -47,7 +47,8 @@ class Payment(db.Model):
     #
     # dont know if we have to specify this because of the given relation..
     # defined in order model used parameter 'backref': payments = db.relationship('Payment', backref='order', lazy=True)
-    # fkorder = db.Column(db.Integer, db.ForeignKey, primary_key=True)
+    fkorder = db.Column(db.Integer, db.ForeignKey(
+        'order.id'), primary_key=True)
     paymenttype = db.Column(db.String(20))
     fullamount = db.Column(db.Float)
     partialamount = db.Column(db.Float)
@@ -66,7 +67,7 @@ class Producttype(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     producttypename = db.Column(db.String(20), nullable=False)
     description = db.Column(db.String(100), nullable=False)
-    products = db.relationship('Product', backref="product", lazy=True)
+    products = db.relationship('Product', backref="producttype", lazy=True)
 
     def __repr__(self):
         return f"Producttype('{self.id}', '{self.producttypename}', '{self.description}')"
@@ -78,7 +79,7 @@ class Product(db.Model):
     quantity = db.Column(db.Integer)
     price = db.Column(db.Float)
     disabled = db.Column(db.Boolean, default=False)
-    producttype_id = db.Column(db.Integer, db.ForeignKey('Producttype.id'))
+    producttype_id = db.Column(db.Integer, db.ForeignKey('producttype.id'))
 
     def __repr__(self):
         return f"Product('{self.id}', '{self.title}', '{self.quantity}', '{self.price}', '{self.disabled}'," \
