@@ -99,9 +99,16 @@ def cart():
     if request.method == 'POST':
 
         # get chosen products from form
-        cart_products = request.form
 
-        return render_template('cart.html', title='Cart', products=cart_products)
+        products = Product.query.filter_by(disabled=False).all()
+
+        products_in_cart = []
+        for p in products:
+            if int(request.form[str(p.id)]) > 0:
+                p.quantity = int(request.form[str(p.id)])
+                products_in_cart.append(p)
+
+        return render_template('cart.html', title='Cart', products=products_in_cart)
 
     return redirect(url_for('products'))
 
