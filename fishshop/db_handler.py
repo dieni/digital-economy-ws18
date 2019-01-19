@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine  # for what is this import?
+from fishshop import db
 
 
 class db_connection:
@@ -6,28 +6,44 @@ class db_connection:
     This class handels the connection to the sql database.
     '''
 
+    #b2c - get all products
     def get_products(self):
-        '''
-        Get a list of all products
-        '''
-        # TODO link with database
-        pass
+        productobjects = db.product.query.all()
+        if productobjects is None:
+            return None
+        else:
+            return productobjects
 
+    #b2c - get all orders
     def get_orders(self, customer_id):
-        '''
-        Get all orders from a customer
-        '''
-        pass
+        orderobjects = db.order.query.filter_by(fkkunde=customer_id).all()
+        if orderobjects is None:
+            return None
+        else:
+            return orderobjects
 
+    #b2b
     def search_product(self, id):
-        # TODO search in database
-        pass
+        productobject = db.product.query.filter_by(id=id).first()
+        if productobject is None:
+            return None
+        if productobject.disabled == 0:
+            return None
+        else:
+            return productobject.quantity
 
-    def cancel_order(self, customer_id, order_id):
-        '''
-        cancel an order from a user
-        '''
-        pass
+    #b2b and b2c
+    def cancel_order(self, order_id, db):
+        orderobject = db.order.query.filter_by(id=order_id).first()
+        if orderobject is None:
+            return None
+        else:
+            orderobject.canceled = 1
+            db.session.add(orderobject)
+            db.session.commit()
+            return True
+
+
 
     def authorize(self, username, password):
         '''

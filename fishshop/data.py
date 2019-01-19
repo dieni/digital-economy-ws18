@@ -1,5 +1,3 @@
-from sqlalchemy import create_engine
-
 class db_connection:
     '''
     This class handels the connection to the database.
