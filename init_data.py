@@ -1,5 +1,5 @@
 from fishshop import app, db
-from fishshop.models import Customer, Order, Payment, Producttype, Product
+from fishshop.models import Customer, Ordering, Payment, Producttype, Product
 
 if __name__ == '__main__':
     app.run(debug=True)
