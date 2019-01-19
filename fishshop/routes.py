@@ -162,29 +162,65 @@ def api_search():
         return 'Schema'
 
 
-@app.route('/api/orders', methods=['GET', 'PUT'])
+@app.route('/api/orders', methods=['GET', 'PUT', 'POST'])
 def cancellation():
     '''
-    FINISHED
+
     Customer must be authorized.
 
-    GET: Get a list of all orders of a user
+
     PUT: Cancel a specific order
+    POST: Order a product
+    GET: Get a list of all orders of a user
     '''
     # Authorization
-    customer = authorize(request)
+    customer = authorize(request.authorization.username, request.authorization.password)
 
+    if not customer:
+        return 'You are not authorized'
     if request.method == 'PUT':
         # cancel order and send back confirmation.
 
+        root = et.fromstring(request.data)
+
+        # get order id from request
+        bestellung_ids = root.findall(".//bestellungid")  # returns a list
+        bestellung_id = int(bestellung_ids[0].text)
+
+        # storno
+        result = db_con.cancel_ordering(bestellung_id)
+        if result != -1:
+            root = et.Element('storno')
+            bestell_id = et.SubElement(root, 'bestellungid')
+            storno = et.SubElement(root, 'storniert')
+            bestell_id.text = str(bestellung_id)
+            storno.text = "erfolgreich"
+            xml_str = et.tostring(root, encoding='utf8', method='xml')
+        else: return "Order nicht gefunden!"
+
+    elif request.method == 'POST':
         # reading the xml from the request
         root = et.fromstring(request.data)
 
         # get order id from request
-        order_id = root.findall(".//bestellungid")  # returns a list
+        product_ids = root.findall(".//produktid")  # returns a list
+        product_id = int(product_ids[0].text)
 
-        # cancel order
-        return db_con.cancel_order(customer['customer_id'], int(order_id[0].text))
+        amounts = root.findall(".//menge")  # returns a list
+        amount = int(amounts[0].text)
+
+        # insert new ordering and return new ordering id
+        ordering_id = db_con.create_ordering(product_id, customer.id, amount)
+
+        if ordering_id != -1:
+            root = et.Element('kauf')
+            bestell_id = et.SubElement(root, 'bestellungid')
+            bestell_id.text = str(ordering_id)
+
+            xml_str = et.tostring(root, encoding='utf8', method='xml')
+
+            return Response(xml_str, mimetype='text/xml')
+        else: return "Ware nicht vorhanden!"
 
     else:
         # return a list of orders from a user
@@ -222,23 +258,18 @@ def cancellation():
     return Response(xml_str, mimetype='text/xml')
 
 
-def authorize(request):
+def authorize(username, password):
     '''
     This is a method to authorize a customer. If login is missing or is wrong response with error message will sent. Else this
     method returns the customer object.
     '''
-    auth = request.authorization
 
-    if not auth:
-        return "You are not authorized!"
+    customer = Customer.query.filter_by(username=username).first()
+    if customer and bcrypt.check_password_hash(customer.password, password):
+        return customer
+    else:
+        return None
 
-    customer = db_con.authorize(int(auth.username), auth.password)
-
-    if not customer:
-        return "Wrong customer id or password!"
-
-    # if authorization is ok return object of customer
-    return customer
 
 
 def checkSession():

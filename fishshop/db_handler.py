@@ -11,24 +11,19 @@ class db_connection:
         # Insert Customer
         # the first user = admin
         customer1 = Customer(cname='Admin', username='admin',
-                             password=bcrypt.generate_password_hash(
-                                 'password').decode('UTF-8'),
+                             password=bcrypt.generate_password_hash('password').decode('UTF-8'),
                              email='admin@customer.at', usertype='Admin')
         customer2 = Customer(cname='Hans Jackson', username='private1',
-                             password=bcrypt.generate_password_hash(
-                                 'password').decode('UTF-8'),
+                             password=bcrypt.generate_password_hash('password').decode('UTF-8'),
                              email='jackson@customer.at', usertype='Private')
         customer3 = Customer(cname='Otto Bolt', username='private2',
-                             password=bcrypt.generate_password_hash(
-                                 'password').decode('UTF-8'),
+                             password=bcrypt.generate_password_hash('password').decode('UTF-8'),
                              email='bolt@customer.at', usertype='Private')
         customer4 = Customer(cname='Firma Merkur', username='business1',
-                             password=bcrypt.generate_password_hash(
-                                 'password').decode('UTF-8'),
+                             password=bcrypt.generate_password_hash('password').decode('UTF-8'),
                              email='merkur@customer.at', usertype='Business')
-        customer5 = Customer(cname='Firma Billa', username='business1',
-                             password=bcrypt.generate_password_hash(
-                                 'password').decode('UTF-8'),
+        customer5 = Customer(cname='Firma Billa', username='business2',
+                             password=bcrypt.generate_password_hash('password').decode('UTF-8'),
                              email='billa@customer.at', usertype='Business')
         # Put data into the database
         db.session.add(customer1)
@@ -49,12 +44,9 @@ class db_connection:
         db.session.add(payment)
 
         # Insert Producttype
-        producttype1 = Producttype(
-            producttypename='Fisch', description='Alle Fische')
-        producttype2 = Producttype(
-            producttypename='Muscheln', description='Alle Muscheln')
-        producttype3 = Producttype(
-            producttypename='Krebstiere', description='Alle Krebstiere')
+        producttype1 = Producttype(producttypename='Fisch', description='Alle Fische')
+        producttype2 = Producttype(producttypename='Muscheln', description='Alle Muscheln')
+        producttype3 = Producttype(producttypename='Krebstiere', description='Alle Krebstiere')
         producttype4 = Producttype(producttypename='Sonstige', description='Sonstige Produkte wie '
                                                                            'zb. Aufstriche, Olivenöl etc.')
         # Put data into the database
@@ -64,26 +56,16 @@ class db_connection:
         db.session.add(producttype4)
 
         # Insert Product
-        product1 = Product(title='Thunfisch', quantity=45,
-                           price=100.34, disabled=0, producttype_id='1')
-        product2 = Product(title='Lachs', quantity=86,
-                           price=59.90, disabled=0, producttype_id='1')
-        product3 = Product(title='Schwertfisch', quantity=10,
-                           price=200.23, disabled=0, producttype_id='1')
-        product4 = Product(title='Miesmuschel', quantity=160,
-                           price=10.98, disabled=0, producttype_id='2')
-        product5 = Product(title='Jacobsmuschel', quantity=5,
-                           price=60.22, disabled=0, producttype_id='2')
-        product6 = Product(title='Venusmuschel', quantity=76,
-                           price=13.78, disabled=0, producttype_id='2')
-        product7 = Product(title='Krabbe', quantity=71,
-                           price=50.25, disabled=0, producttype_id='3')
-        product8 = Product(title='Garnele', quantity=20,
-                           price=10.34, disabled=0, producttype_id='3')
-        product9 = Product(title='Hummer', quantity=98,
-                           price=1000.25, disabled=0, producttype_id='3')
-        product10 = Product(title='Olivenöl', quantity=0,
-                            price=8.90, disabled=1, producttype_id='4')
+        product1 = Product(title='Thunfisch', quantity=45, price=100.34, disabled=0, producttype_id='1')
+        product2 = Product(title='Lachs', quantity=86, price=59.90, disabled=0, producttype_id='1')
+        product3 = Product(title='Schwertfisch', quantity=10, price=200.23, disabled=0, producttype_id='1')
+        product4 = Product(title='Miesmuschel', quantity=160, price=10.98, disabled=0, producttype_id='2')
+        product5 = Product(title='Jacobsmuschel', quantity=5, price=60.22, disabled=0, producttype_id='2')
+        product6 = Product(title='Venusmuschel', quantity=76, price=13.78, disabled=0, producttype_id='2')
+        product7 = Product(title='Krabbe', quantity=71, price=50.25, disabled=0, producttype_id='3')
+        product8 = Product(title='Garnele', quantity=20, price=10.34, disabled=0, producttype_id='3')
+        product9 = Product(title='Hummer', quantity=98, price=1000.25, disabled=0, producttype_id='3')
+        product10 = Product(title='Olivenöl', quantity=0, price=8.90, disabled=1, producttype_id='4')
 
         # Put data into the database
         db.session.add(product1)
@@ -145,15 +127,40 @@ class db_connection:
             return productobject.quantity
 
     #b2b and b2c
-    def cancel_order(self, order_id, db):
-        orderobject = db.order.query.filter_by(id=order_id).first()
+    def cancel_ordering(self, ordering_id):
+        orderobject = Ordering.query.filter_by(id=ordering_id).first()
         if orderobject is None:
-            return None
+            return -1
         else:
             orderobject.canceled = 1
-            db.session.add(orderobject)
             db.session.commit()
-            return True
+            return 1
+
+    # b2b
+    def create_ordering(self, product_id, customer_id, amount):
+
+        # get amount of product
+        productobject = Product.query.filter_by(id=product_id).first()
+        if amount < productobject.quantity and productobject.disabled is False:
+            # Insert new ordering ordering
+            newordering = Ordering(finished=True, canceled=False, customer_id=customer_id)
+            db.session.add(newordering)
+            db.session.commit()
+            # get new id
+            neworderingid = newordering.id
+
+            association = Association(ordering_id=neworderingid, product_id=product_id, amount=amount)
+            # Put data into the database
+            db.session.add(association)
+            # commit all inserts
+            db.session.commit()
+
+            # minimize amount in product
+            productobject.quantity = productobject.quantity - amount
+            db.session.commit()
+            return neworderingid
+        else:
+            return -1
 
     def authorize(self, username, password):
         '''

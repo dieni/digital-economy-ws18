@@ -12,7 +12,7 @@ def load_customer(user_id):
 class Customer(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     cname = db.Column(db.String(20), nullable=False)
-    username = db.Column(db.String(20), nullable=False)
+    username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     usertype = db.Column(db.String(20), nullable=False)
