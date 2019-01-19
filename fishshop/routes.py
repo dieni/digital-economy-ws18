@@ -310,7 +310,6 @@ def authorize(username, password):
         return None
 
 
-
 def checkSession():
     '''
     This method checks if a session exists
