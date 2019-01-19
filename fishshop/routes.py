@@ -1,7 +1,7 @@
 from flask import Flask, render_template, url_for, request, Response, flash, redirect, session
 from fishshop import app, db, bcrypt
 from fishshop.forms import LoginForm
-from fishshop.models import Customer, Order, Product, Producttype, Payment
+from fishshop.models import Customer, Ordering, Product, Producttype, Payment
 from flask_login import login_user, current_user, logout_user, login_required
 from fishshop.db_handler import db_connection
 
@@ -34,7 +34,7 @@ def dbcreate():
     '''
     db_con.create_db()
 
-    return 'Yay'
+    return 'Database created'
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -51,7 +51,8 @@ def login():
 
     if form.validate_on_submit():
         # check if there is a customer with this id
-        customer = Customer.query.filter_by(id=form.customer_id.data).first()
+        customer = Customer.query.filter_by(
+            username=form.username.data).first()
         if customer and bcrypt.check_password_hash(customer.password, form.password.data):
             login_user(customer)
             return redirect(url_for('home'))
@@ -73,12 +74,13 @@ def products():
     Here the user can see all products which are available.
     '''
     # TODO: Modify the template to check some products to buy. Use a Button to proceed with purchasing.
-    products = db_con.get_products()  # get products from the database
+    # products = db_con.get_products()  # get products from the database
+    products = Product.query.all()  # get products from the database
 
     if not products:
         return 'None'
 
-    return render_template('products.html', title='Products', products=products, authorized=checkSession())
+    return render_template('products.2.html', title='Products', products=products, authorized=checkSession())
 
 
 @app.route('/search')
@@ -90,11 +92,18 @@ def search():
     return render_template('search.html', title='Search', authorized=checkSession())
 
 
-@app.route('/cart')
+@app.route('/cart', methods=['GET', 'POST'])
 @login_required
 def cart():
 
-    return 'your shopping cart'
+    if request.method == 'POST':
+
+        # get chosen products from form
+        cart_products = request.form
+
+        return render_template('cart.html', title='Cart', products=cart_products)
+
+    return redirect(url_for('products'))
 
 
 @app.route('/dashboard')
@@ -118,7 +127,7 @@ def api_products():
     '''
 
     # query the products
-    products = db_con.get_products()
+    products = Product.query.all()
 
     # building xml
     root = et.Element('products')
