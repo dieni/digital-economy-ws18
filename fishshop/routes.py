@@ -39,20 +39,41 @@ def dbcreate():
     return 'Database created'
 
 # c2b storno
-
-
-@app.route('/storno')
-def storno():
+@app.route('/orders')
+@login_required
+def orders():
     '''
     This is the page for ordering storno
     '''
 
-    orderobjects = Ordering.query.filter_by(customer_id=4).filter_by(
+    # current user
+    current_user
+
+    # products purchaised
+    current_user.id
+
+    orderobjects = Ordering.query.filter_by(customer_id=current_user.id).filter_by(
         canceled=False).filter_by(finished=False).all()
-    if not orderobjects:
-        return 'None'
+    # if not orderobjects:
+       # return 'None'
     # , authorized=checkSession())
-    return render_template('storno.html', title='Orders', orders=orderobjects)
+    return render_template('orders.html', title='Orders', orders=orderobjects)
+
+
+@app.route('/storno', methods=['GET', 'POST'])
+@login_required
+def storno():
+    '''
+    This canceling order
+    '''
+
+
+    # cancel order and send back confirmation.
+    orderid = request.args.get('orderid', type=int)
+
+    # storno
+    result = db_con.cancel_ordering(orderid)
+    return render_template('storno.html', title='Storno')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -176,7 +197,7 @@ def checkout():
 
         # write to database
         if db_con.buy_products(current_user.id, products, payment_method, payments):
-            return "Thank you for your order!"
+            return render_template('complete.html', title='finished')
 
         return "Something went wrong. Please try again later."
 
