@@ -28,8 +28,10 @@ class Customer(db.Model, UserMixin):
 
 # many to many association between ordering and products
 class Association(db.Model):
-    ordering_id = db.Column(db.Integer, db.ForeignKey('ordering.id'), primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), primary_key=True)
+    ordering_id = db.Column(db.Integer, db.ForeignKey(
+        'ordering.id'), primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey(
+        'product.id'), primary_key=True)
     amount = db.Column(db.Integer)
 
 
@@ -47,19 +49,20 @@ class Ordering(db.Model):
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    fkordering= db.Column(db.Integer, db.ForeignKey('ordering.id'), primary_key=True)
+    fkordering = db.Column(db.Integer, db.ForeignKey(
+        'ordering.id'), primary_key=True)
     paymenttype = db.Column(db.String(20))
     fullamount = db.Column(db.Float)
     partialamount = db.Column(db.Float)
     partialpayment = db.Column(db.Boolean, default=False)
     partialquantity = db.Column(db.Integer)
     partialnumber = db.Column(db.Integer)
-    fkpartialpayment = db.Column(db.Integer, db.ForeignKey('payment.id'))
+    fkpartialpayment = db.Column(db.Integer)
 
     def __repr__(self):
-        return f"Payment('{self.id}', '{self.fkordering}', '{self.paymenttype}','{self.fullamount}'," \
-            f"'{self.partialamount}','{self.partialpayment}','{self.partialquantity}','{self.partialnumber}'," \
-            f" '{self.fkpartialpayment}')"
+        return f"Payment('{self.id}', '{self.fkordering}', '{self.paymenttype}','{self.fullamount}',"
+        f"'{self.partialamount}','{self.partialpayment}','{self.partialquantity}','{self.partialnumber}',"
+        f" '{self.fkpartialpayment}')"
 
 
 class Producttype(db.Model):
@@ -82,5 +85,5 @@ class Product(db.Model):
     orders = db.relationship('Association', backref='product', lazy=True)
 
     def __repr__(self):
-        return f"Product('{self.id}', '{self.title}', '{self.quantity}', '{self.price}', '{self.disabled}'," \
-            f" '{self.producttype_id}')"
+        return f"Product('{self.id}', '{self.title}', '{self.quantity}', '{self.price}', '{self.disabled}',"
+        f" '{self.producttype_id}')"

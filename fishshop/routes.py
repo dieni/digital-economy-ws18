@@ -13,6 +13,7 @@ import xml.etree.ElementTree as et
 
 db_con = db_connection()
 
+customer_cart = {}
 
 # B2C Webshop
 
@@ -24,7 +25,8 @@ def home():
     This is the start page of our webshop.
     '''
 
-    return render_template('home.html', title='Home', authorized=checkSession())
+    # , authorized=checkSession())
+    return render_template('home.html', title='Home')
 
 
 @app.route('/dbcreate')
@@ -37,16 +39,20 @@ def dbcreate():
     return 'Database created'
 
 # c2b storno
+
+
 @app.route('/storno')
 def storno():
     '''
     This is the page for ordering storno
     '''
 
-    orderobjects = Ordering.query.filter_by(customer_id=4).filter_by(canceled=False).filter_by(finished=False).all()
+    orderobjects = Ordering.query.filter_by(customer_id=4).filter_by(
+        canceled=False).filter_by(finished=False).all()
     if not orderobjects:
         return 'None'
-    return render_template('storno.html', title='Orders', orders=orderobjects, authorized=checkSession())
+    # , authorized=checkSession())
+    return render_template('storno.html', title='Orders', orders=orderobjects)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -92,8 +98,8 @@ def products():
     if not products:
         return 'None'
 
-    return render_template('products.2.html', title='Products', products=products, authorized=checkSession())
-
+    # , authorized=checkSession())
+    return render_template('products.2.html', title='Products', products=products)
 
 
 @app.route('/cart', methods=['GET', 'POST'])
@@ -106,13 +112,16 @@ def cart():
 
         products = Product.query.filter_by(disabled=False).all()
 
-        products_in_cart = []
+        # products_in_cart = []
+        customer_cart[current_user.id] = []
         for p in products:
-            if int(request.form[str(p.id)]) > 0:
-                p.quantity = int(request.form[str(p.id)])
-                products_in_cart.append(p)
+            if p.quantity > 0:
+                if int(request.form[str(p.id)]) > 0:
+                    p.quantity = int(request.form[str(p.id)])
+                    # products_in_cart.append(p)
+                    customer_cart[current_user.id].append(p)
 
-        return render_template('cart.html', title='Cart', products=products_in_cart)
+        return render_template('cart.html', title='Cart', products=customer_cart[current_user.id])
 
     return redirect(url_for('products'))
 
@@ -128,16 +137,23 @@ def checkout():
 
     if request.method == 'POST':
 
-        count = 0
+        # current user
+        current_user
 
-        buy = []
-        for p in request.form.get('quantity'):
-            count += 1
-            product = Product.query.find_by(title=p['ptitle']).first()
-            product.quantity = p['quantity']
-            buy.append(product)
+        # products purchaised
+        products = customer_cart[current_user.id]
 
-        return "Thank you for your order " + str(count)
+        # payment method
+        payment_method = str(request.form['payment_method'])
+
+        # number of payments
+        payments = str(request.form['quantity_payments'])
+
+        # write to database
+        if db_con.buy_products(current_user.id, products, payment_method, payments):
+            return "Thank you for your order!"
+
+        return "Something went wrong. Please try again later."
 
 
 @app.route('/dashboard')
@@ -208,7 +224,8 @@ def cancellation():
     GET: Get a list of all orders of a user
     '''
     # Authorization
-    customer = authorize(request.authorization.username, request.authorization.password)
+    customer = authorize(request.authorization.username,
+                         request.authorization.password)
 
     if not customer:
         return 'You are not authorized'
@@ -257,7 +274,7 @@ def cancellation():
 
             return Response(xml_str, mimetype='text/xml')
         else:
-        	return "Ware nicht vorhanden!"
+            return "Ware nicht vorhanden!"
 
     '''
     else:
@@ -310,14 +327,14 @@ def authorize(username, password):
         return None
 
 
-def checkSession():
-    '''
-    This method checks if a session exists
-    '''
-    if 'customer' in session:
-        return True
-    else:
-        return False
+# def checkSession():
+#     '''
+#     This method checks if a session exists
+#     '''
+#     if 'customer' in session:
+#         return True
+#     else:
+#         return False
 
 
 if __name__ == '__main__':
