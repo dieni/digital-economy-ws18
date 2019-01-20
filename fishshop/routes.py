@@ -80,6 +80,31 @@ def login():
     return render_template('login.html', title='Login', form=form)
 
 
+@app.route('/manage/login', methods=['GET', 'POST'])
+def loginAdmin():
+    '''
+    Login page so the use can login to the system. Get session for a user
+    '''
+
+    # if user is already logged in redirect to home
+    if current_user.is_authenticated:
+        return redirect(url_for('administration'))
+
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        # check if there is a admin with this id
+        admin = Customer.query.filter_by(
+            username=form.username.data).first()
+        if admin and admin.usertype == 'Admin' and bcrypt.check_password_hash(admin.password, form.password.data):
+            login_user(admin)
+            return redirect(url_for('administration'))
+        else:
+            flash('Login Unsuccessful. Please check id and password', 'danger')
+        
+    return render_template('login.html', title='Login', form=form)    
+
+    
 @app.route('/logout')
 def logout():
     logout_user()
@@ -202,14 +227,42 @@ def api_products():
     return Response(xml_str, mimetype='text/xml')
 
 
-@app.route('/api/search', methods=['GET', 'PUT'])
+@app.route('/api/search', methods=['GET', 'PUT', 'POST'])
 def api_search():
     # TODO
     if request.method == 'PUT':
         return "XML with list of search results"
     else:
-        # Return schema of search
-        return 'Schema'
+        if request.method == 'GET':
+            #TODO
+            return "Get"
+        else:
+            if request.method == 'POST':
+                httpxml = et.fromstring(request.data)
+                
+                # building xml
+                root = et.Element('products')
+                
+                for pr in httpxml.findall("produktid"):
+                    p = db_con.search_product(int(pr.text))
+                    
+                    if p is None:
+                        continue
+
+                    product = et.SubElement(root, 'product')
+                    product_id = et.SubElement(product, 'id')
+                    product_id.text = str(p.id)
+                    title = et.SubElement(product, 'title')
+                    title.text = str(p.title)
+                    price = et.SubElement(product, 'price')
+                    price.text = str(p.price)
+                    available = et.SubElement(product, 'disabled')
+                    available.text = str(p.disabled)
+                
+                xml_str = et.tostring(root, encoding='utf8', method='xml')
+                # Return schema of search
+                return Response(xml_str, mimetype='text/xml')
+
 
 
 @app.route('/api/orders', methods=['GET', 'PUT', 'POST'])
@@ -313,7 +366,49 @@ def cancellation():
     return Response(xml_str, mimetype='text/xml')
 '''
 
+#Admin Area
+@app.route('/manage/admin', methods=['GET', 'PUT', 'POST'])
+def administration():
 
+    #admin = authorizeAdmin(request.authorization.username, request.authorization.password)
+    #if not admin:
+    #    return 'You are not authorized'
+    products = Product.query.all()
+
+    if request.method == 'GET' and current_user.usertype == 'Admin':
+        return render_template('admin.html', title='Adminstrator Page', products=products)
+    else:
+        return 'Sorry you dont have admin rights'
+
+
+@app.route('/manage/updateproduct', methods=['GET', 'PUT', 'POST'])
+@login_required
+def update_product():
+
+    if request.method == 'POST':
+
+        # get all products
+        products = Product.query.all()
+ 
+        for p in products:
+            #DeActivate product
+            if request.form[str(p.id)] == 'True' and p.disabled == 0:
+                productobject = Product.query.filter_by(id=p.id).first()
+                productobject.disabled = True
+                db.session.commit()
+                
+
+            #Activate product
+            if request.form[str(p.id)] == 'False' and p.disabled == 1:                 
+                 productobject = Product.query.filter_by(id=p.id).first()
+                 productobject.disabled = False
+                 db.session.commit()
+
+        return render_template('admin.html', title='Administration Page', products=products, status="update")
+
+    return redirect(url_for('administration'))
+
+    
 def authorize(username, password):
     '''
     This is a method to authorize a customer. If login is missing or is wrong response with error message will sent. Else this
@@ -325,6 +420,7 @@ def authorize(username, password):
         return customer
     else:
         return None
+
 
 
 # def checkSession():

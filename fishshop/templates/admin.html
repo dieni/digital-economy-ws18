@@ -1,0 +1,97 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h1>Administration Page</h1>
+
+<input type="text" id="myInput" onkeyup="search_function()" placeholder="Search for products.." title="Type in a name">
+<p></p>
+{% if status=='update' %}
+<p>System updated</p>
+{% endif %}
+
+<form action = "/manage/updateproduct" method = "POST">
+    <div class="card">
+    <table class="table table-hover shopping-cart-wrap" id='myTable'>
+    <thead class="text-muted">
+    <tr>
+      <th scope="col">Product</th>
+      <th scope="col" width="120">In Stock</th>
+      <th scope="col" width="120">Price</th>
+      <th scope="col" width="120">Active</th>
+      <!--<th scope="col" width="200" class="text-right">Action</th>-->
+    </tr>
+    </thead>
+    <tbody>
+
+{% for product in products %}
+<tr>
+        <td>
+            <figure class="media">
+                <div class="img-wrap"><img src="http://bootstrap-ecommerce.com/main/images/items/2.jpg" class="img-thumbnail img-sm"></div>
+                <figcaption class="media-body">
+                    <h6 class="title text-truncate">{{product.title}} </h6>
+                    <dl class="param param-inline small">
+                    <dt>Category: </dt>
+                    <dd>{{product.producttype_id}}</dd>
+                    </dl>
+                </figcaption>
+            </figure> 
+                </td>
+                <td>
+                    {{product.quantity}}
+                </td>
+                <td> 
+                    <div class="price-wrap"> 
+                            <var class="price">EUR {{product.price}}</var> 
+                    </div> <!-- price-wrap .// -->
+                </td>
+                <td>
+                    <select class="form-control" name="{{product.id}}">
+                            {% if product.disabled != False %}
+                                <option selected value="True">False</option>
+                                <option value="False">True</option>
+                            {% elif product.disabled != True %}
+                                <option value="True">False</option>
+                                <option selected value="False">True</option>
+                            {% endif %}       
+                    </select>                      
+                </td>           
+            </tr>
+{% endfor %}
+    
+    </tbody>
+    </table>
+    </div> <!-- admin.// -->
+    {% if current_user.is_authenticated %}
+    <div style='float: right;'>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="reset" class="btn btn-default pull-right">Cancel</button>
+    </div>
+    {% endif %}
+    </form>
+    <p>&nbsp;</p>
+    <!-- Javascrip search-->
+    <script>
+        function search_function() {
+            // Declare variables
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("myInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("myTable");
+            tr = table.getElementsByTagName("tr");
+    
+            // Loop through all table rows, and hide those who don't match the search query
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("h6")[0];
+                if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+                }
+            }
+        }
+    </script>
+    
+    {% endblock content %}    
