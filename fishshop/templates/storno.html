@@ -1,8 +1,17 @@
 {% extends 'layout.html' %}
 {% block content %}
 
+<form action="{{ url_for('storno') }}" method = "Put">
 {% for order in orders %}
-    <li>Order-ID: {{ order.id }} Storno</li>
+    <li>Order-ID: {{ order.id }} </li>
+    <input type="submit" value="Storno" >
+    <input type="hidden" name="orderid" value="{{ order.id }}">
+    <input type="text" name="cpee-id" value="">
 {% endfor %}
 
+</form>
+
 {% endblock content %}
+
+
+

@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<form action="{{url_for('stornodone') }}" method = "Put">
+{% for order in orders %}
+    <li>Order-ID: {{ order.id }} </li>
+    <a href>Storno</a>
+{% endfor %}
+
+</form>
+
+{% endblock content %}
+
+
+
